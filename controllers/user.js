@@ -1,16 +1,14 @@
 const asyncHandler = require("express-async-handler");
-const User = require("../models/userModel");
+const User = require("../models/user");
 const Joi = require("joi");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 //@desc Get all users
 //@route Get /api/bap-store/users
-//@access public
+//@access private
 
 const getUsers = asyncHandler(async (req, res) => {
   const users = await User.find();
-  console.log("user", users);
-
   res.status(200).json(users);
 });
 
@@ -40,15 +38,16 @@ const getUserDetail = asyncHandler(async (req, res, next) => {
 
 //@desc Create user
 //@route Post /api/bap-store/user
-//@access public
+//@access private
 
 const createUser = asyncHandler(async (req, res) => {
   try {
     const { username, password, email, phone } = req.body;
     if (!username || !password || !email || !phone) {
       res.status(400);
-      throw new Error("All fields are mandatory!");
+      throw new Error("All fields are mandatory");
     }
+
     const userAvailabel = await User.findOne({ username, phone });
     if (userAvailabel) {
       res.status(400);
@@ -56,11 +55,11 @@ const createUser = asyncHandler(async (req, res) => {
     }
 
     //Hash password
-    // const hashedPassword = await bcrypt.hash(password, 10);
-    const hashedPassword = await bcrypt.hashSync(
-      "password",
-      bcrypt.genSaltSync(10)
-    );
+    const hashedPassword = await bcrypt.hash(password, 10);
+    // const hashedPassword = await bcrypt.hashSync(
+    //   "password",
+    //   bcrypt.genSaltSync(10)
+    // );
 
     const user = await User.create({
       username,
@@ -86,7 +85,6 @@ const createUser = asyncHandler(async (req, res) => {
 //@desc Login user
 //@route Post /api/bap-store/user
 //@access private
-
 const login = asyncHandler(async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -100,11 +98,8 @@ const login = asyncHandler(async (req, res) => {
       username,
     });
 
-    console.log("aaaa", user);
-
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
-    console.log("isPasswordValid", isPasswordValid);
     if (user && isPasswordValid) {
       const accessToken = jwt.sign(
         {
@@ -116,21 +111,28 @@ const login = asyncHandler(async (req, res) => {
           },
         },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "1m" }
+        { expiresIn: "10m" }
       );
       res.status(200).json({ accessToken });
     } else {
       res.status(401);
-      throw new Error("Username or Password in not valid!");
+      throw new Error("Username or password in not valid!");
     }
   } catch (error) {
     throw new Error(`Failed to login user: ${error.message}`);
   }
 });
+const currentUser = asyncHandler(async (req, res) => {
+  try {
+    res.json(req.user);
+  } catch (error) {
+    throw new Error(`Failed to get current user: ${error.message}`);
+  }
+});
 
 //@desc Update user
 //@route Put /api/bap-store/user/:id
-//@access public
+//@access private
 
 const updateUser = asyncHandler(async (req, res) => {
   try {
@@ -155,7 +157,7 @@ const updateUser = asyncHandler(async (req, res) => {
 
 //@desc Delete user
 //@route Delete /api/bap-store/user/:id
-//@access public
+//@access private
 
 const deleteUser = asyncHandler(async (req, res) => {
   try {
@@ -182,4 +184,5 @@ module.exports = {
   login,
   updateUser,
   deleteUser,
+  currentUser,
 };
