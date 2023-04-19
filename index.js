@@ -15,7 +15,7 @@ app.use("/api/bap-store/categories", require("./routes/category"));
 app.use("/api/bap-store/users", require("./routes/user"));
 app.use(errorHandler);
 
-app.use(cors());
+app.use(cors("*"));
 
 app.listen(port, () => {
   console.log("aaaa", port);
