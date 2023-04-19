@@ -10,12 +10,12 @@ const app = express();
 const port = process.env.PORT || 8080;
 
 app.use(express.json());
+app.use(cors());
+
 app.use("/api/bap-store/products", require("./routes/product"));
 app.use("/api/bap-store/categories", require("./routes/category"));
 app.use("/api/bap-store/users", require("./routes/user"));
 app.use(errorHandler);
-
-app.use(cors("*"));
 
 app.listen(port, () => {
   console.log("aaaa", port);
