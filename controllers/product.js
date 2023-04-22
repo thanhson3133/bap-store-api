@@ -6,15 +6,17 @@ const {
   createProduct,
   updateProduct,
   deleteProduct,
-} = require("../services.js/product");
+} = require("../services/product");
 
 //@desc Get all products
 //@route Get /api/bap-store/products
 //@access public
 
 const getProductHandler = asyncHandler(async (req, res) => {
-  const products = await getProducts(req, res);
-  res.status(200).json(products);
+  try {
+    const product = await getProducts(req, res);
+    res.status(200).json(product);
+  } catch (error) {}
 });
 
 //@desc Get one product

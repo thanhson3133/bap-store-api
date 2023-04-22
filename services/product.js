@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const Product = require("../models/product");
-const getProduct = asyncHandler(async (req, res) => {
+
+const getProducts = asyncHandler(async (req, res) => {
   try {
     const { page, size } = req.query;
     const products = await Product.find()
@@ -23,6 +24,7 @@ const getProductDetail = asyncHandler(async (req, res) => {
       res.status(404);
       throw new Error("Product Not Found!");
     }
+
     return product;
   } catch (error) {
     throw new Error(`Failed to get product: ${error.message}`);
@@ -93,7 +95,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
-  getProduct,
+  getProducts,
   getProductDetail,
   createProduct,
   updateProduct,

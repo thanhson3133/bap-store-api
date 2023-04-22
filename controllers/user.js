@@ -12,30 +12,6 @@ const getUsers = asyncHandler(async (req, res) => {
   res.status(200).json(users);
 });
 
-//@desc Get one user
-//@route Get /api/bap-store/user/:id
-//@access private
-
-const getUserDetail = asyncHandler(async (req, res, next) => {
-  try {
-    if (req.params.id.length != 24) {
-      res.status(404);
-      throw new Error("User id must enough 24 character!");
-    }
-
-    const user = await User.findById(req.params.id);
-
-    if (!user) {
-      res.status(404);
-      throw new Error("User Not Found!");
-    }
-
-    res.status(200).json(user);
-  } catch (error) {
-    throw new Error(`Failed to get user: ${error.message}`);
-  }
-});
-
 //@desc Create user
 //@route Post /api/bap-store/user
 //@access private
@@ -54,6 +30,12 @@ const createUser = asyncHandler(async (req, res) => {
       throw new Error("User already registered!");
     }
 
+    const emailAvailable = await User.findOne({ email });
+    if (emailAvailable) {
+      res.status(400);
+      throw new Error("Email duplicate key error collection!");
+    }
+
     //Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
     // const hashedPassword = await bcrypt.hashSync(
@@ -70,14 +52,19 @@ const createUser = asyncHandler(async (req, res) => {
 
     if (user) {
       res.status(201).json({
-        _id: user.id,
-        email: user.email,
+        data: {
+          _id: user.id,
+          username: user.username,
+          phone: user.phone,
+          email: user.email,
+        },
       });
     } else {
       res.status(400);
       throw new Error("User data us not valid!");
     }
   } catch (error) {
+    console.log(error);
     throw new Error(`Failed to create user: ${error.message}`);
   }
 });
@@ -89,7 +76,6 @@ const login = asyncHandler(async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    console.log("usernamepassword", username, password);
     if (!username || !password) {
       res.status(400);
       throw new Error("All fields are username or password!");
@@ -113,7 +99,15 @@ const login = asyncHandler(async (req, res) => {
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: "10m" }
       );
-      res.status(200).json({ accessToken });
+      res.status(200).json({
+        data: {
+          id: user._doc._id,
+          username: user._doc.username,
+          email: user._doc.email,
+          phone: user._doc.phone,
+          accessToken,
+        },
+      });
     } else {
       res.status(401);
       throw new Error("Username or password in not valid!");
@@ -124,7 +118,14 @@ const login = asyncHandler(async (req, res) => {
 });
 const currentUser = asyncHandler(async (req, res) => {
   try {
-    res.json(req.user);
+    res.json({
+      data: {
+        username: req.user.username,
+        email: req.user.email,
+        phone: req.user.phone,
+        id: req.user.id,
+      },
+    });
   } catch (error) {
     throw new Error(`Failed to get current user: ${error.message}`);
   }
@@ -149,7 +150,14 @@ const updateUser = asyncHandler(async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
-    res.status(201).json(updatedUser);
+    res.status(201).json({
+      data: {
+        _id: updatedUser._id,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+      },
+    });
   } catch (error) {
     throw new Error(`Failed to update user: ${error.message}`);
   }
@@ -179,7 +187,6 @@ const deleteUser = asyncHandler(async (req, res) => {
 
 module.exports = {
   getUsers,
-  getUserDetail,
   createUser,
   login,
   updateUser,

@@ -5,7 +5,7 @@ const {
   createCategory,
   updateCategory,
   deleteCategory,
-} = require("../services.js/category");
+} = require("../services/category");
 
 //@desc Get all categories
 //@route Get /api/bap-store/categories
