@@ -3,8 +3,13 @@ const Product = require("../models/product");
 
 const getProducts = asyncHandler(async (req, res) => {
   try {
-    const { page, size } = req.query;
-    const products = await Product.find()
+    const { page, size, category } = req.query;
+    let searchByCategory = {};
+    if (category)
+      searchByCategory = {
+        $or: [{ category: category }],
+      };
+    const products = await Product.find(searchByCategory)
       .skip((page - 1) * size)
       .limit(size);
     return products;
