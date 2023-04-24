@@ -33,8 +33,8 @@ const getProductDetail = asyncHandler(async (req, res) => {
 
 const createProduct = asyncHandler(async (req, res) => {
   try {
-    const { name, description, price, quantity, category } = req.body;
-    if (!name || !price || !quantity || !category) {
+    const { name, description, price, quantity, category, image } = req.body;
+    if (!name || !price || !quantity || !category || !image) {
       res.status(400);
       throw new Error("All fields are mandatory");
     }
@@ -45,6 +45,7 @@ const createProduct = asyncHandler(async (req, res) => {
       price,
       quantity,
       category,
+      image,
     });
     return product;
   } catch (error) {
